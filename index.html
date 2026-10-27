@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana RPS Prasekolah Interaktif (KSPK 2026)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Application Styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Default Theme Variables (Theme Blue) */
+        :root {
+            --theme-primary: #1e3a8a;
+            --theme-secondary: #0284c7;
+            --theme-light: #eff6ff;
+            --theme-border: #93c5fd;
+            --theme-text: #1e3a8a;
+        }
+
+        .theme-blue {
+            --theme-primary: #1e3a8a;
+            --theme-secondary: #0284c7;
+            --theme-light: #eff6ff;
+            --theme-border: #93c5fd;
+            --theme-text: #1e3a8a;
+        }
+
+        .theme-green {
+            --theme-primary: #065f46;
+            --theme-secondary: #059669;
+            --theme-light: #ecfdf5;
+            --theme-border: #6ee7b7;
+            --theme-text: #065f46;
+        }
+
+        .theme-purple {
+            --theme-primary: #581c87;
+            --theme-secondary: #7e22ce;
+            --theme-light: #faf5ff;
+            --theme-border: #c084fc;
+            --theme-text: #581c87;
+        }
+
+        .theme-crimson {
+            --theme-primary: #881337;
+            --theme-secondary: #e11d48;
+            --theme-light: #fff1f2;
+            --theme-border: #fda4af;
+            --theme-text: #881337;
+        }
+
+        /* Dynamic Theme Classes */
+        .doc-header-banner {
+            background-color: var(--theme-primary) !important;
+            color: #ffffff !important;
+        }
+
+        .doc-section-title {
+            background-color: var(--theme-primary) !important;
+            color: #ffffff !important;
+        }
+
+        .doc-subheading {
+            color: var(--theme-text) !important;
+        }
+
+        .doc-bg-light {
+            background-color: var(--theme-light) !important;
+        }
+
+        .doc-border-theme {
+            border-color: var(--theme-border) !important;
+        }
+
+        /* Screen Preview Card Structure */
+        .preview-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 14mm 16mm 12mm 16mm;
+            margin: 0 auto 20px auto;
+            background: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* */
+        /* CRITICAL MULTI-PAGE PRINT STYLES */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            *, *::before, *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            /* Unset all overflow, height, max-height and position locks during print */
+            html, body, #appWorkspace, main, #previewCard, #printDoc {
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                position: static !important;
+                display: block !important;
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .preview-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                min-height: 275mm !important;
+                padding: 0 0 5mm 0 !important;
+                border: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+
+            .preview-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            /* Prevent splitting table rows or section boxes across page breaks */
+            tr, .avoid-break {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden theme-blue" id="appBody">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-slate-900 text-white px-6 py-3 flex items-center justify-between shadow-md z-20 no-print flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fa-solid fa-file-pen text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold leading-tight">Penjana RPS Prasekolah Interaktif</h1>
+                <p class="text-xs text-slate-400">Kurikulum Prasekolah (KSPK 2026) • Format Multi-Page PDF</p>
+            </div>
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="flex items-center space-x-2">
+            <!-- Theme Color Selector -->
+            <div class="flex items-center space-x-1 mr-3 bg-slate-800 p-1.5 rounded-lg border border-slate-700">
+                <span class="text-xs text-slate-400 px-1 font-medium">Tema:</span>
+                <button onclick="setTheme('theme-blue')" class="w-5 h-5 rounded-full bg-blue-900 border border-blue-400 focus:ring-2 ring-white" title="Tunjang Komunikasi (Biru)"></button>
+                <button onclick="setTheme('theme-green')" class="w-5 h-5 rounded-full bg-emerald-900 border border-emerald-400 focus:ring-2 ring-white" title="Sains & Teknologi (Hijau)"></button>
+                <button onclick="setTheme('theme-purple')" class="w-5 h-5 rounded-full bg-purple-900 border border-purple-400 focus:ring-2 ring-white" title="Matematik / Perkembangan (Ungu)"></button>
+                <button onclick="setTheme('theme-crimson')" class="w-5 h-5 rounded-full bg-rose-900 border border-rose-400 focus:ring-2 ring-white" title="Kemanusiaan / Fizikal (Merah)"></button>
+            </div>
+
+            <!-- Presets Dropdown -->
+            <div class="relative group">
+                <button class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Contoh Draf <i class="fa-solid fa-chevron-down text-xs"></i>
+                </button>
+                <div class="absolute right-0 top-full mt-1 w-52 bg-white text-slate-800 rounded-lg shadow-xl border border-slate-200 py-1 hidden group-hover:block z-30">
+                    <button onclick="loadPreset('bm')" class="w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-book text-blue-600"></i> Bahasa Melayu (BM 1.1.1)
+                    </button>
+                    <button onclick="loadPreset('sains')" class="w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-flask text-emerald-600"></i> Sains Awal (SA 2.1.1)
+                    </button>
+                    <button onclick="loadPreset('matematik')" class="w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-purple-600"></i> Matematik Awal (MA 1.1.4)
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="resetForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-slate-700" title="Kosongkan Borang">
+                <i class="fa-solid fa-rotate-right"></i> Reset
+            </button>
+
+            <!-- Print Help Modal Button -->
+            <button onclick="toggleHelpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-slate-700" title="Tips Cetak PDF">
+                <i class="fa-solid fa-circle-question text-amber-400"></i>
+            </button>
+
+            <!-- Print PDF Button -->
+            <button onclick="triggerPrint()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-lg shadow-blue-900/40">
+                <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- PRINT TIP MODAL -->
+    <div id="helpModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-2 text-blue-900">
+                    <i class="fa-solid fa-print text-xl"></i>
+                    <h3 class="font-bold text-base">Panduan Cetak PDF Semua Muka Surat</h3>
+                </div>
+                <button onclick="toggleHelpModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+                <p>Untuk memastikan kedua-dua muka surat dipaparkan dengan sempurna dalam cetakan PDF:</p>
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded text-amber-900 font-medium">
+                    <i class="fa-solid fa-check-circle mr-1"></i> Pastikan pilihan <strong>"Background graphics"</strong> (Grafik latar belakang) dicentang dalam tetapan cetakan pelayar anda.
+                </div>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Destinasi / Destination:</strong> Pilih <em>Save as PDF</em> / <em>Simpan sebagai PDF</em>.</li>
+                    <li><strong>Halaman / Pages:</strong> Pilih <em>All</em> (Semua).</li>
+                    <li><strong>Saiz Kertas:</strong> A4.</li>
+                </ul>
+            </div>
+            <div class="mt-5 text-right">
+                <button onclick="toggleHelpModal(); triggerPrint();" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-blue-500">
+                    Teruskan Cetak Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE -->
+    <div id="appWorkspace" class="flex-1 flex overflow-hidden">
+        
+        <!-- LEFT PANEL: FORM EDITOR -->
+        <aside id="formPanel" class="w-1/2 bg-white border-r border-slate-200 flex flex-col overflow-y-auto no-print">
+            <div class="p-6 space-y-6">
+                
+                <!-- Section 1: Maklumat Asas -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> 1. Maklumat Asas Slot
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tunjang / Subjek</label>
+                            <input type="text" id="inpTunjang" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas</label>
+                            <input type="text" id="inpKelas" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Masa & Durasi</label>
+                            <input type="text" id="inpMasa" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Bilangan Murid & Umur</label>
+                            <input type="text" id="inpMurid" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh & Hari</label>
+                            <input type="text" id="inpTarikh" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mod Pembelajaran</label>
+                            <input type="text" id="inpMod" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Fokus Utama</label>
+                        <input type="text" id="inpFokus" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Standard Kandungan (SK)</label>
+                        <input type="text" id="inpSK" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Standard Pembelajaran (SP)</label>
+                        <textarea id="inpSP" oninput="updatePreview()" rows="2" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kesepaduan Tunjang</label>
+                        <textarea id="inpKesepaduan" oninput="updatePreview()" rows="2" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 2: Objektif & Elemen -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-blue-600"></i> 2. Objektif & Kriteria Kejayaan
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Objektif Pembelajaran</label>
+                        <textarea id="inpObjektif" oninput="updatePreview()" rows="3" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="1. Murid dapat...&#10;2. Murid dapat..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kriteria Kejayaan</label>
+                        <textarea id="inpKriteria" oninput="updatePreview()" rows="2" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Bahan Bantu Mengajar (BBM)</label>
+                        <input type="text" id="inpBBM" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Elemen PAK-21 & EMK / KBAT</label>
+                        <input type="text" id="inpEMK" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Section 3: Langkah PdP -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-600"></i> 3. Langkah PdP
+                    </h2>
+
+                    <!-- Set Induksi -->
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-800">Set Induksi</span>
+                            <input type="text" id="inpMasaInduksi" oninput="updatePreview()" class="w-20 px-2 py-0.5 text-xs border rounded text-right" placeholder="5 Minit">
+                        </div>
+                        <textarea id="inpActInduksi" oninput="updatePreview()" rows="3" class="w-full px-2 py-1 text-xs border rounded focus:outline-none"></textarea>
+                        <input type="text" id="inpCatInduksi" oninput="updatePreview()" class="w-full px-2 py-1 text-xs border rounded" placeholder="Catatan / BBM Induksi">
+                    </div>
+
+                    <!-- Langkah 1 -->
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-800">Langkah 1 (Pengenalan)</span>
+                            <input type="text" id="inpMasaL1" oninput="updatePreview()" class="w-20 px-2 py-0.5 text-xs border rounded text-right" placeholder="10 Minit">
+                        </div>
+                        <textarea id="inpActL1" oninput="updatePreview()" rows="3" class="w-full px-2 py-1 text-xs border rounded focus:outline-none"></textarea>
+                        <input type="text" id="inpCatL1" oninput="updatePreview()" class="w-full px-2 py-1 text-xs border rounded" placeholder="Catatan / BBM Langkah 1">
+                    </div>
+
+                    <!-- Langkah 2 -->
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-800">Langkah 2 (Aplikasi)</span>
+                            <input type="text" id="inpMasaL2" oninput="updatePreview()" class="w-20 px-2 py-0.5 text-xs border rounded text-right" placeholder="10 Minit">
+                        </div>
+                        <textarea id="inpActL2" oninput="updatePreview()" rows="3" class="w-full px-2 py-1 text-xs border rounded focus:outline-none"></textarea>
+                        <input type="text" id="inpCatL2" oninput="updatePreview()" class="w-full px-2 py-1 text-xs border rounded" placeholder="Catatan / BBM Langkah 2">
+                    </div>
+
+                    <!-- Penutup -->
+                    <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-800">Penutup (Refleksi / Rumusan)</span>
+                            <input type="text" id="inpMasaPenutup" oninput="updatePreview()" class="w-20 px-2 py-0.5 text-xs border rounded text-right" placeholder="5 Minit">
+                        </div>
+                        <textarea id="inpActPenutup" oninput="updatePreview()" rows="2" class="w-full px-2 py-1 text-xs border rounded focus:outline-none"></textarea>
+                        <input type="text" id="inpCatPenutup" oninput="updatePreview()" class="w-full px-2 py-1 text-xs border rounded" placeholder="Catatan / BBM Penutup">
+                    </div>
+                </div>
+
+                <!-- Section 4: Pentaksiran (PBD) -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-blue-600"></i> 4. Rubrik Pentaksiran (TP1 - TP3)
+                    </h2>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahap Penguasaan 1 (TP 1)</label>
+                        <input type="text" id="inpTP1" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahap Penguasaan 2 (TP 2)</label>
+                        <input type="text" id="inpTP2" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahap Penguasaan 3 (TP 3)</label>
+                        <input type="text" id="inpTP3" oninput="updatePreview()" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300">
+                    </div>
+                </div>
+
+                <!-- Section 5: Refleksi Guru -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-user-check text-blue-600"></i> 5. Refleksi Kendiri Guru
+                    </h2>
+                    <textarea id="inpRefleksi" oninput="updatePreview()" rows="3" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300"></textarea>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- RIGHT PANEL: REAL-TIME PREVIEW / PRINTED CONTAINER -->
+        <main id="previewCard" class="w-1/2 bg-slate-200 overflow-y-auto p-6 flex justify-center">
+            <div id="printDoc" class="w-full flex flex-col items-center">
+                
+                <!-- PAGE 1 OF DOCUMENT -->
+                <div class="preview-page">
+                    <div>
+                        <!-- Header Banner -->
+                        <div class="doc-header-banner p-4 rounded-lg mb-4 flex justify-between items-center shadow-sm">
+                            <div>
+                                <span class="bg-white/20 text-white text-[8.5pt] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">KURIKULUM PRASEKOLAH 2026</span>
+                                <h1 class="text-[14pt] font-extrabold uppercase mt-1 tracking-tight leading-tight">Rancangan Pengajaran Slot (RPS)</h1>
+                                <p id="outTunjangHeader" class="text-[9.5pt] opacity-90 font-medium">TUNJANG KOMUNIKASI — BAHASA MELAYU</p>
+                            </div>
+                            <div class="text-right text-[8.5pt] opacity-90 leading-tight">
+                                <p id="outTarikh">Tarikh: -</p>
+                                <p id="outMod">Mod: Teras Kelas</p>
+                            </div>
+                        </div>
+
+                        <!-- Info Metadata Grid -->
+                        <div class="border border-slate-300 rounded overflow-hidden text-[8.5pt] mb-4 avoid-break">
+                            <div class="grid grid-cols-4 divide-x divide-y divide-slate-300">
+                                <div class="bg-slate-50 p-1.5 font-bold text-slate-700">Kelas</div>
+                                <div id="outKelas" class="p-1.5 text-slate-900">-</div>
+                                <div class="bg-slate-50 p-1.5 font-bold text-slate-700">Masa / Durasi</div>
+                                <div id="outMasa" class="p-1.5 text-slate-900">-</div>
+                                
+                                <div class="bg-slate-50 p-1.5 font-bold text-slate-700">Bilangan Murid</div>
+                                <div id="outMurid" class="p-1.5 text-slate-900" colspan="3">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Section 1 -->
+                        <div class="doc-section-title text-[9.5pt] font-bold px-3 py-1 rounded mb-2">1. PEMETAAN KURIKULUM & FOKUS</div>
+                        <table class="w-full text-[8.5pt] border-collapse border border-slate-300 mb-4 avoid-break">
+                            <tbody>
+                                <tr class="border-b border-slate-300">
+                                    <td class="w-1/4 bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Fokus Utama</td>
+                                    <td id="outFokus" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Standard Kandungan (SK)</td>
+                                    <td id="outSK" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Standard Pembelajaran (SP)</td>
+                                    <td id="outSP" class="p-1.5 text-slate-900 whitespace-pre-line">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Kesepaduan Tunjang</td>
+                                    <td id="outKesepaduan" class="p-1.5 text-slate-900 whitespace-pre-line">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Section 2 -->
+                        <div class="doc-section-title text-[9.5pt] font-bold px-3 py-1 rounded mb-2">2. OBJEKTIF & ELEMEN PELAKSANAAN</div>
+                        <table class="w-full text-[8.5pt] border-collapse border border-slate-300 avoid-break">
+                            <tbody>
+                                <tr class="border-b border-slate-300">
+                                    <td class="w-1/4 bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Objektif Pembelajaran</td>
+                                    <td id="outObjektif" class="p-1.5 text-slate-900 whitespace-pre-line">-</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Kriteria Kejayaan</td>
+                                    <td id="outKriteria" class="p-1.5 text-slate-900 whitespace-pre-line">-</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Bahan Bantu Mengajar (BBM)</td>
+                                    <td id="outBBM" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="bg-slate-50 p-1.5 font-bold text-slate-700 border-r border-slate-300">Elemen PAK-21 & EMK</td>
+                                    <td id="outEMK" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer Page 1 -->
+                    <div class="pt-2 border-t border-slate-200 text-[8pt] text-slate-500 flex justify-between items-center">
+                        <span>RPS Prasekolah • KSPK 2026</span>
+                        <span>Muka Surat 1 dari 2</span>
+                    </div>
+                </div>
+
+                <!-- PAGE 2 OF DOCUMENT -->
+                <div class="preview-page">
+                    <div>
+                        <!-- Section 3 -->
+                        <div class="doc-section-title text-[9.5pt] font-bold px-3 py-1 rounded mb-2">3. PERKEMBANGAN LANGKAH PENGAJARAN SLOT</div>
+                        <table class="w-full text-[8pt] border-collapse border border-slate-300 mb-4">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-slate-300 text-slate-800">
+                                    <th class="w-1/5 p-1.5 text-left border-r border-slate-300">Langkah / Masa</th>
+                                    <th class="w-1/2 p-1.5 text-left border-r border-slate-300">Aktiviti Pengajaran & Pembelajaran (PdP)</th>
+                                    <th class="p-1.5 text-left">Catatan / BBM</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-300">
+                                <tr class="avoid-break">
+                                    <td class="p-1.5 font-bold doc-subheading border-r border-slate-300">
+                                        Set Induksi<br>
+                                        <span id="outMasaInduksi" class="font-normal text-slate-500 text-[7.5pt]">(5 Minit)</span>
+                                    </td>
+                                    <td id="outActInduksi" class="p-1.5 whitespace-pre-line border-r border-slate-300 text-slate-900">-</td>
+                                    <td id="outCatInduksi" class="p-1.5 bg-slate-50 text-slate-700">-</td>
+                                </tr>
+                                <tr class="avoid-break">
+                                    <td class="p-1.5 font-bold doc-subheading border-r border-slate-300">
+                                        Langkah 1<br>
+                                        <span id="outMasaL1" class="font-normal text-slate-500 text-[7.5pt]">(10 Minit)</span>
+                                    </td>
+                                    <td id="outActL1" class="p-1.5 whitespace-pre-line border-r border-slate-300 text-slate-900">-</td>
+                                    <td id="outCatL1" class="p-1.5 bg-slate-50 text-slate-700">-</td>
+                                </tr>
+                                <tr class="avoid-break">
+                                    <td class="p-1.5 font-bold doc-subheading border-r border-slate-300">
+                                        Langkah 2<br>
+                                        <span id="outMasaL2" class="font-normal text-slate-500 text-[7.5pt]">(10 Minit)</span>
+                                    </td>
+                                    <td id="outActL2" class="p-1.5 whitespace-pre-line border-r border-slate-300 text-slate-900">-</td>
+                                    <td id="outCatL2" class="p-1.5 bg-slate-50 text-slate-700">-</td>
+                                </tr>
+                                <tr class="avoid-break">
+                                    <td class="p-1.5 font-bold doc-subheading border-r border-slate-300">
+                                        Penutup<br>
+                                        <span id="outMasaPenutup" class="font-normal text-slate-500 text-[7.5pt]">(5 Minit)</span>
+                                    </td>
+                                    <td id="outActPenutup" class="p-1.5 whitespace-pre-line border-r border-slate-300 text-slate-900">-</td>
+                                    <td id="outCatPenutup" class="p-1.5 bg-slate-50 text-slate-700">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Section 4 -->
+                        <div class="doc-section-title text-[9.5pt] font-bold px-3 py-1 rounded mb-2">4. PENTAKSIRAN STANDARD PRESTASI (PBD)</div>
+                        <table class="w-full text-[8pt] border-collapse border border-slate-300 mb-4 avoid-break">
+                            <thead>
+                                <tr class="doc-bg-light border-b border-slate-300 doc-subheading">
+                                    <th class="w-1/6 p-1.5 text-center border-r border-slate-300 font-bold">TP</th>
+                                    <th class="p-1.5 text-left font-bold">Tafsiran Prestasi Standard Pembelajaran</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-300">
+                                <tr>
+                                    <td class="p-1.5 text-center font-bold bg-slate-50 border-r border-slate-300">TP 1</td>
+                                    <td id="outTP1" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-1.5 text-center font-bold bg-slate-50 border-r border-slate-300">TP 2</td>
+                                    <td id="outTP2" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-1.5 text-center font-bold bg-slate-50 border-r border-slate-300">TP 3</td>
+                                    <td id="outTP3" class="p-1.5 text-slate-900">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Section 5 -->
+                        <div class="border border-slate-300 rounded p-3 bg-slate-50 text-[8pt] avoid-break">
+                            <div class="font-bold text-slate-800 mb-1 border-b border-slate-200 pb-1">REFLEKSI KENDIRI GURU & CATATAN IMPAK</div>
+                            <div id="outRefleksi" class="text-slate-700 whitespace-pre-line leading-relaxed min-h-[45px]">-</div>
+                        </div>
+
+                        <!-- Signature Section -->
+                        <div class="grid grid-cols-2 gap-8 mt-5 text-[8pt] avoid-break">
+                            <div>
+                                <p class="text-slate-500 mb-7">Disediakan Oleh:</p>
+                                <div class="border-b border-slate-400 w-3/4"></div>
+                                <p class="font-bold mt-1 text-slate-800">(Guru Prasekolah)</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 mb-7">Disahkan Oleh:</p>
+                                <div class="border-b border-slate-400 w-3/4"></div>
+                                <p class="font-bold mt-1 text-slate-800">(Guru Besar / Penolong Kanan)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Page 2 -->
+                    <div class="pt-2 border-t border-slate-200 text-[8pt] text-slate-500 flex justify-between items-center">
+                        <span>RPS Prasekolah • KSPK 2026</span>
+                        <span>Muka Surat 2 dari 2</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // PRESET DATA DICTIONARY
+        const PRESETS = {
+            bm: {
+                theme: 'theme-blue',
+                tunjang: 'TUNJANG KOMUNIKASI — BAHASA MELAYU',
+                kelas: 'Prasekolah Cemerlang',
+                masa: '8:30 – 9:00 Pagi (30 Minit)',
+                murid: '25 Orang (Umur 5-6 Tahun)',
+                tarikh: '14 Oktober 2026 / Rabu',
+                mod: 'Teras Aktiviti Kelas & Kumpulan',
+                fokus: 'BM 1.0 Kemahiran Mendengar dan Bertutur',
+                sk: 'BM 1.1 Mendengar dan memberi respons terhadap pelbagai bunyi di persekitaran.',
+                sp: 'BM 1.1.1 Mengecam bunyi di persekitaran (Bunyi alam, haiwan, ciptaan manusia, dan manusia).',
+                kesepaduan: 'KD 1.1.1 Mendengar dan memberi respons terhadap orang lain.\nFK 1.1.2 Memproses maklumat deria pendengaran.',
+                objektif: '1. Mengecam dan menyebut sekurang-kurangnya 3 daripada 4 jenis bunyi persekitaran yang diperdengarkan secara betul.\n2. Memadankan kad gambar dengan audio bunyi yang betul melalui aktiviti permainan.',
+                kriteria: '• Murid dapat mendengar audio dan meneka sumber bunyi dengan tepat.\n• Murid membuat aksi/mimik gerak mengikut bunyi yang didengar.',
+                bbm: 'Pembesar suara bluetooth, audio bunyi (kucing, hujan, hon kereta), Kotak Ajaib, Kad Gambar.',
+                emk: 'PAK-21: Permainan Pendidikan (Gamification)\nKBAT: Menganalisis sumber bunyi.',
+                masaInduksi: '5 Minit',
+                actInduksi: '1. Guru meminta murid memejamkan mata dan suasana diam dicipta selama 30 saat.\n2. Guru membunyikan wisel / mengetuk meja secara perlahan.\n3. Soal jawab: "Apakah yang kamu dengar semasa memejam mata tadi?"',
+                catInduksi: 'Wisel, Meja, Peka Pendengaran',
+                masaL1: '10 Minit',
+                actL1: '1. Guru memainkan audio bagi 3 kategori bunyi: Alam (Hujan), Haiwan (Kucing), Ciptaan Manusia (Kereta).\n2. Murid mengecam dan menyebut nama sumber bunyi tersebut.\n3. Murid meniru vokal bunyi bersama-sama secara kelas.',
+                catL1: 'Speaker Bluetooth, Audio Bunyi Persekitaran',
+                masaL2: '10 Minit',
+                actL2: '1. Murid menjalankan aktiviti "Kotak Ajaib & Aksi Bunyi".\n2. Wakil murid mencabut kad gambar yang sepadan dari Kotak Ajaib dan menampal di papan putih.\n3. Murid melakonkan aksi berpandukan bunyi.',
+                catL2: 'Kotak Ajaib, Kad Gambar Bunyi',
+                masaPenutup: '5 Minit',
+                actPenutup: '1. Guru dan murid merumuskan kembali 3 jenis bunyi persekitaran yang dipelajari.\n2. Murid menerima stiker bintang ganjaran.',
+                catPenutup: 'Stiker Bintang, Penerapan Nilai Murni',
+                tp1: 'Murid boleh mengecam dan menyebut bunyi di persekitaran dengan bimbingan guru yang berterusan.',
+                tp2: 'Murid boleh mengecam dan menyebut bunyi di persekitaran secara betul tanpa bimbingan berterusan.',
+                tp3: 'Murid boleh mengecam, menyebut, dan memadankan pelbagai bunyi persekitaran dengan tepat dan yakin.',
+                refleksi: '22 / 25 murid mencapai objektif pembelajaran hari ini.\n3 murid diberikan bimbingan susulan dalam aktiviti pengecaman bunyi semasa sesi kumpulan.'
+            },
+            sains: {
+                theme: 'theme-green',
+                tunjang: 'TUNJANG SAINS DAN TEKNOLOGI — SAINS AWAL',
+                kelas: 'Prasekolah Bijak',
+                masa: '9:00 – 9:40 Pagi (40 Minit)',
+                murid: '20 Orang (Umur 5-6 Tahun)',
+                tarikh: '15 Oktober 2026 / Khamis',
+                mod: 'Inkuiri Penemuan & Amali',
+                fokus: 'SA 2.0 Kemahiran Proses Sains',
+                sk: 'SA 2.1 Membuat pemerhatian menggunakan kelima-lima deria.',
+                sp: 'SA 2.1.1 Memerhati persekitaran menggunakan deria penglihatan, pendengaran, sentuhan, bau dan rasa.',
+                kesepaduan: 'BM 1.2.2 Mendengar dan menyanyikan lagu.\nFK 1.1.1 Menggunakan motor halus.',
+                objektif: '1. Mengenal pasti permukaan kasar dan halus pada sekurang-kurangnya 3 objek bahan fizikal secara amali.\n2. Mengelaskan objek mengikut tekstur permukaan dengan betul.',
+                kriteria: '• Murid menyentuh dan menyatakan tekstur permukaan bahan (kasar/halus).\n• Murid mengasingkan kad bahan ke dalam bekas yang betul.',
+                bbm: 'Kertas pasir, kapas, kain sutera, batu, dulang penerokaan, carta pengelasan.',
+                emk: 'Sains & Teknologi, Sikap Saintifik dan Nilai Murni.',
+                masaInduksi: '5 Minit',
+                actInduksi: '1. Guru menunjukkan sebuah "Dulang Rahsia" yang ditutup dengan kain.\n2. Seorang murid dipanggil untuk memasukkan tangan dan menyentuh bahan tanpa melihat.',
+                catInduksi: 'Dulang Rahsia, Kain Penutup',
+                masaL1: '15 Minit',
+                actL1: '1. Murid dibahagikan kepada 4 kumpulan amali.\n2. Setiap kumpulan dibekalkan sampel bahan (kertas pasir, kapas, batu, tuala).\n3. Murid merasai permukaan objek dan menyebut kosa kata "Kasar" dan "Halus".',
+                catL1: 'Kertas Pasir, Kapas, Batu, Tuala',
+                masaL2: '15 Minit',
+                actL2: '1. Murid membuat stesen aktiviti pengelasan.\n2. Murid mengasingkan objek fizikal ke dalam Bekas A (Kasar) atau Bekas B (Halus).\n3. Guru membimbing sebutan dan pemerhatian.',
+                catL2: 'Bekas Label Kasar & Halus',
+                masaPenutup: '5 Minit',
+                actPenutup: '1. Murid bersoal jawab mengenai kegunaan deria sentuhan.\n2. Pujian atas kerjasama kumpulan.',
+                catPenutup: 'Rumusan Sains Awal',
+                tp1: 'Murid dapat menyatakan tekstur bahan dengan bimbingan guru.',
+                tp2: 'Murid dapat membezakan tekstur kasar dan halus secara amali dengan betul.',
+                tp3: 'Murid dapat mengelaskan pelbagai objek mengikut tekstur dengan tepat dan menerangkan jawapan.',
+                refleksi: '18 / 20 murid berjaya mengelaskan objek kasar dan halus dengan tepat.\n2 murid diberi bimbingan menggunakan deria sentuhan secara individu.'
+            },
+            matematik: {
+                theme: 'theme-purple',
+                tunjang: 'TUNJANG SAINS DAN TEKNOLOGI — MATEMATIK AWAL',
+                kelas: 'Prasekolah Pintar',
+                masa: '10:00 – 10:30 Pagi (30 Minit)',
+                murid: '24 Orang (Umur 5-6 Tahun)',
+                tarikh: '16 Oktober 2026 / Jumaat',
+                mod: 'Permainan Nombor & Konkrit',
+                fokus: 'MA 1.0 Pengalaman Ketatabahasaan / Pre-Number',
+                sk: 'MA 1.1 Memadankan objek.',
+                sp: 'MA 1.1.4 Memadankan objek berdasarkan pasangan yang berpadanan (cth: kasut-stoking, cawan-piring).',
+                kesepaduan: 'KD 2.3.1 Menunjukkan sikap berdikari.\nBM 1.4.1 Interaksi sosial.',
+                objektif: '1. Memadankan sekurang-kurangnya 4 daripada 5 pasangan objek yang berpadanan secara konkrit dengan betul.',
+                kriteria: '• Murid menghubungkan objek fizikal yang saling berpasangan.\n• Murid menerangkan alasan pasangan objek tersebut.',
+                bbm: 'Kasut/stoking, cawan/piring, pensel/pemadam, berus gigi/ubat gigi, kad bergambar.',
+                emk: 'Kreativiti & Inovasi, Pemikiran Logik.',
+                masaInduksi: '5 Minit',
+                actInduksi: '1. Guru memakai stoking di tangan dan kasut di kaki sebagai jenaka ransangan.\n2. Murid membetulkan kesalahan guru dan menyatakan pasangan sebenar.',
+                catInduksi: 'Objek Konkrit Seharian',
+                masaL1: '10 Minit',
+                actL1: '1. Guru menunjukkan 4 set objek konkrit di meja hadapan.\n2. Guru menerangkan konsep "Pasangan Berpadanan".\n3. Murid dipanggil memadankan objek secara fizikal.',
+                catL1: 'Cawan, Piring, Pensel, Pemadam',
+                masaL2: '10 Minit',
+                actL2: '1. Permainan "Cari Pasangan Saya": Murid diberikan satu gambar objek.\n2. Murid bergerak mencari rakan yang memegang gambar pasangan yang betul.',
+                catL2: 'Kad Bergambar Pasangan Objek',
+                masaPenutup: '5 Minit',
+                actPenutup: '1. Semakan pasangan di hadapan kelas.\n2. Rumusan matematik awal.',
+                catPenutup: 'Penerapan Nilai Kemas',
+                tp1: 'Murid memadankan pasangan objek dengan bimbingan.',
+                tp2: 'Murid memadankan pasangan objek berpadanan dengan betul secara mandiri.',
+                tp3: 'Murid memadankan pasangan dan menjelaskan fungsi perpadanan objek tersebut.',
+                refleksi: 'Semua murid terlibat aktif dan berjaya memadankan gambar pasangan objek.'
+            }
+        };
+
+        const fields = [
+            'Tunjang', 'Kelas', 'Masa', 'Murid', 'Tarikh', 'Mod', 'Fokus', 'SK', 'SP', 'Kesepaduan',
+            'Objektif', 'Kriteria', 'BBM', 'EMK',
+            'MasaInduksi', 'ActInduksi', 'CatInduksi',
+            'MasaL1', 'ActL1', 'CatL1',
+            'MasaL2', 'ActL2', 'CatL2',
+            'MasaPenutup', 'ActPenutup', 'CatPenutup',
+            'TP1', 'TP2', 'TP3', 'Refleksi'
+        ];
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedDraft = localStorage.getItem('rps_draft_kspk_v3');
+            if (savedDraft) {
+                try {
+                    const data = JSON.parse(savedDraft);
+                    populateForm(data);
+                    if (data.theme) setTheme(data.theme);
+                } catch(e) {
+                    loadPreset('bm');
+                }
+            } else {
+                loadPreset('bm');
+            }
+        });
+
+        // SET THEME
+        function setTheme(themeName) {
+            document.body.className = `h-screen flex flex-col overflow-hidden ${themeName}`;
+            saveToLocalStorage();
+        }
+
+        // LOAD PRESET DATA
+        function loadPreset(key) {
+            const data = PRESETS[key];
+            if (!data) return;
+            setTheme(data.theme || 'theme-blue');
+            populateForm(data);
+            updatePreview();
+        }
+
+        // POPULATE FORM FIELDS
+        function populateForm(data) {
+            fields.forEach(f => {
+                const el = document.getElementById('inp' + f);
+                if (el && data[f.toLowerCase()] !== undefined) {
+                    el.value = data[f.toLowerCase()];
+                }
+            });
+            updatePreview();
+        }
+
+        // RESET FORM
+        function resetForm() {
+            if (confirm('Adakah anda pasti untuk mengosongkan semua isian borang?')) {
+                fields.forEach(f => {
+                    const el = document.getElementById('inp' + f);
+                    if (el) el.value = '';
+                });
+                updatePreview();
+                localStorage.removeItem('rps_draft_kspk_v3');
+            }
+        }
+
+        // UPDATE LIVE PREVIEW
+        function updatePreview() {
+            const data = {};
+
+            fields.forEach(f => {
+                const inp = document.getElementById('inp' + f);
+                const out = document.getElementById('out' + f);
+                const val = inp ? inp.value.trim() : '';
+
+                data[f.toLowerCase()] = val;
+
+                if (out) {
+                    out.textContent = val || '-';
+                }
+            });
+
+            // Special Handling for Header Subtitle
+            const outTunjangHeader = document.getElementById('outTunjangHeader');
+            if (outTunjangHeader) {
+                outTunjangHeader.textContent = data.tunjang || 'TUNJANG PRASEKOLAH (KSPK)';
+            }
+
+            saveToLocalStorage(data);
+        }
+
+        // SAVE TO LOCALSTORAGE
+        function saveToLocalStorage(currentData) {
+            const dataToSave = currentData || {};
+            if (!currentData) {
+                fields.forEach(f => {
+                    const inp = document.getElementById('inp' + f);
+                    if (inp) dataToSave[f.toLowerCase()] = inp.value;
+                });
+            }
+            dataToSave.theme = document.body.className.match(/theme-\w+/)?.[0] || 'theme-blue';
+            localStorage.setItem('rps_draft_kspk_v3', JSON.stringify(dataToSave));
+        }
+
+        // HELP MODAL TOGGLE
+        function toggleHelpModal() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // PRINT TRIGGER
+function triggerPrint() {
+    // Check if the app is embedded in an iframe (like Google Sites)
+    if (window !== window.parent) {
+        // 1. Lock current input values into the HTML so they transfer to the new tab
+        fields.forEach(f => {
+            const el = document.getElementById('inp' + f);
+            if (el) {
+                if (el.tagName === 'TEXTAREA') {
+                    el.textContent = el.value;
+                } else {
+                    el.setAttribute('value', el.value);
+                }
+            }
+        });
+
+        // 2. Open a new, un-sandboxed tab
+        const printWin = window.open('', '_blank');
+        if (printWin) {
+            // 3. Copy the entire current layout to the new tab
+            printWin.document.write('<!DOCTYPE html><html lang="ms">' + document.documentElement.innerHTML + '</html>');
+            printWin.document.close();
+            
+            // 4. Wait briefly for Tailwind CSS to render, then trigger print
+            setTimeout(() => {
+                printWin.focus();
+                printWin.print();
+            }, 800);
+        } else {
+            alert("Pop-up disekat! Sila benarkan 'pop-ups' pada pelayar anda untuk mencetak PDF.");
+        }
+    } else {
+        // Normal print behavior if not embedded
+        window.print();
+    }
+}
+    </script>
+</body>
+</html>
